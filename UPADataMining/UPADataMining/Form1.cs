@@ -35,62 +35,27 @@ namespace UPADataMining
         {
             InitializeComponent();
 
-            GetMostRecent200HomeTimeLine();
+            GetMostRecent20HomeTimeLine();
             lstTweetList.Items.Clear();
             currentTweets.ForEach(tweet =>
                lstTweetList.Items.Add(tweet.Text));
-            GetSideBarList(GetFollowers()).ForEach(name =>
-   lstFollowNames.Items.Add(name));
         }
 
         private List<Status> currentTweets;
 
-        private void GetMostRecent200HomeTimeLine()
+        private void GetMostRecent20HomeTimeLine()
         {
             var twitterContext = new TwitterContext(authorizer);
 
             var tweets = from tweet in twitterContext.Status
                          where tweet.Type == StatusType.Home &&
-                         tweet.Count == 200
+                         tweet.Count == 20
                          select tweet;
 
             currentTweets = tweets.ToList();
         }
 
-        private List<string> GetFollowers()
-        {
-            List<string> results = new List<string>();
 
-            var twitterContext = new TwitterContext(authorizer);
-
-            var temp = Enumerable.FirstOrDefault(from friend in
-               twitterContext.Friendship
-                                                 where friend.Type == FriendshipType.FollowersList &&
-                                                    friend.ScreenName == "shawty_ds" &&
-                                                    friend.Count == 200
-                                                 select friend);
-
-            if (temp != null)
-            {
-                temp.Users.ToList().ForEach(user => results.Add(user.Name));
-
-                while (temp != null && temp.CursorMovement.Next != 0)
-                {
-                    temp = Enumerable.FirstOrDefault(from friend in
-                       twitterContext.Friendship
-                                                     where friend.Type == FriendshipType.FollowersList &&
-                                                        friend.ScreenName == "shawty_ds" &&
-                                                        friend.Count == 200 &&
-                                                        friend.Cursor == temp.CursorMovement.Next
-                                                     select friend);
-
-                    if (temp != null) temp.Users.ToList().ForEach(user =>
-                       results.Add(user.Name));
-                }
-            }
-
-            return results;
-        }
 
         private List<string> GetSideBarList(List<string> inputNames)
 {
@@ -155,7 +120,7 @@ namespace UPADataMining
                   twitterContext.Search
                                            where search.Type == SearchType.Search &&
                                      search.Query == searchTerm &&
-                                     search.Count == 200
+                                     search.Count == 20
                                            select search));
             if (srch != null && srch.Statuses.Count > 0)
             {
@@ -176,7 +141,28 @@ namespace UPADataMining
             lstTweetList.Items.Clear();
             results.ForEach(tweet =>
                lstTweetList.Items.Add(tweet.User.Name + ":"
-               + tweet.Text));
+               + clean(tweet.Text)));
+
+            System.IO.StreamWriter file = new System.IO.StreamWriter("C:\\Users\\SalvadorLeonardo\\Documents\\Proyectos\\UPA Data Mining\\UPA-Data-Mining\\test.arff");
+            file.WriteLine(lines);
+            file.Close();
         }
+        private string lines = "@relation twitter-sentiment-analysis\r\n@attribute tweet string\r\n@attribute sentiment {positive,negative}\r\n\r\n@data\r\n";
+        private string clean(string trim)
+        {
+            string subtrim;
+            subtrim = Regex.Replace(trim, @"http[^\s]+", "");
+            subtrim = Regex.Replace(subtrim, @"@[^\s]+", "");
+            subtrim = Regex.Replace(subtrim, @"#[^\s]+", "");
+            subtrim = Regex.Replace(subtrim, @"RT[^\s]+", "");
+            subtrim = Regex.Replace(subtrim, @"\r\n?|\n", "");
+            subtrim = subtrim.ToLower();
+
+            lines = lines +"\"" +subtrim + "\", negative\r\n";
+
+            return subtrim;
+        }
+
     }
 }
+//Universidad Politecnica de Aguascalientes  Regex.Replace(Regex.Replace(tweet.Text, @"http[^\s]+", ""), @"#[^\s]+ | @[^\s]+", "")))

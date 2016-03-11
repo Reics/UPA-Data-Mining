@@ -1,0 +1,10 @@
+@relation twitter-sentiment-analysis
+@attribute tweet string
+@attribute sentiment {positive,negative}
+
+@data
+"la universidad politécnica de aguascalientes (upa) gana el primer lugar en la categoría de resolución de... ", negative
+"la  establece acuerdos con federal mogul de méxico.la universidad politécnica de aguascalientes lleva a... ", negative
+"dando seguimiento a los trabajos de vinculación que la universidad politécnica de aguascalientes lleva a cabo con... ", negative
+"busca la universidad politécnica de aguascalientes vinculación con federal mogul de méxico ", negative
+
